@@ -109,14 +109,14 @@ export default class StateMachine {
 
   enterState(state, context) {
     invokeEach(this.config.global.stateEnterHooks, state, context);
+    if (this.currentState !== null && this.currentState !== state) {
+      invokeEach(this.config.global.stateChangeHooks, this.currentState, state, context);
+    }
 
+    this.currentState = state;
     const stateConfig = this.config.states[state];
     if (stateConfig) {
       invokeEach(stateConfig.entryActions, state, context);
-    }
-
-    if (this.currentState !== null && this.currentState !== state) {
-      invokeEach(this.config.global.stateChangeHooks, this.currentState, state, context);
     }
 
     try {
@@ -128,8 +128,6 @@ export default class StateMachine {
       this.cancelAsyncActions();
       throw error;
     }
-
-    this.currentState = state;
   }
 
   exitState(context) {
